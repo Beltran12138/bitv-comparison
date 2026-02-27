@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>合约核心术语对比 · Gate / Binance / OKX</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e28;
+    --border: #252936;
+    --accent: #c8a96e;
+    --accent2: #7eb8f7;
+    --text: #e8eaf0;
+    --text-dim: #8892a4;
+    --text-faint: #4a5268;
+    --gate: #2dd4bf;
+    --binance: #f0b90b;
+    --okx: #6c8af5;
+    --diff: #f87171;
+    --same: #4ade80;
+    --warn: #fb923c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans SC', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    padding: 60px 60px 40px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, #13161e 0%, #0d0f14 100%);
+  }
+
+  .header-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0.9;
+  }
+
+  h1 {
+    font-family: 'Noto Serif SC', serif;
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  h1 span {
+    color: var(--accent);
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    border: 1px solid;
+  }
+
+  .badge.gate { color: var(--gate); border-color: var(--gate); background: rgba(45,212,191,0.06); }
+  .badge.binance { color: var(--binance); border-color: var(--binance); background: rgba(240,185,11,0.06); }
+  .badge.okx { color: var(--okx); border-color: var(--okx); background: rgba(108,138,245,0.06); }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .dot.same { background: var(--same); }
+  .dot.diff { background: var(--diff); }
+  .dot.partial { background: var(--warn); }
+
+  /* ── STATS BAR ── */
+  .stats-bar {
+    display: flex;
+    gap: 0;
+    padding: 0 60px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .stat {
+    padding: 16px 28px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    padding: 20px 60px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .filter-label {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+    margin-right: 4px;
+  }
+
+  .filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'Noto Sans SC', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--surface2);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .expand-all {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .expand-all:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
+  /* ── MAIN ── */
+  main {
+    padding: 32px 60px 80px;
+    max-width: 1400px;
+  }
+
+  /* ── MODULE ── */
+  .module {
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .module:hover {
+    border-color: #353a4e;
+  }
+
+  .module-header {
+    display: flex;
+    align-items: center;
+    padding: 20px 28px;
+    background: var(--surface);
+    cursor: pointer;
+    user-select: none;
+    gap: 16px;
+    transition: background 0.2s;
+  }
+
+  .module-header:hover {
+    background: var(--surface2);
+  }
+
+  .module-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    width: 24px;
+    flex-shrink: 0;
+  }
+
+  .module-title {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .module-subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    margin-left: 4px;
+  }
+
+  .module-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .pill {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.5px;
+  }
+
+  .pill.diff { background: rgba(248,113,113,0.15); color: var(--diff); border: 1px solid rgba(248,113,113,0.3); }
+  .pill.same { background: rgba(74,222,128,0.12); color: var(--same); border: 1px solid rgba(74,222,128,0.25); }
+  .pill.partial { background: rgba(251,146,60,0.12); color: var(--warn); border: 1px solid rgba(251,146,60,0.25); }
+
+  .chevron {
+    color: var(--text-faint);
+    font-size: 12px;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+  }
+
+  .module.open .chevron {
+    transform: rotate(180deg);
+  }
+
+  /* ── MODULE BODY ── */
+  .module-body {
+    display: none;
+    background: var(--bg);
+  }
+
+  .module.open .module-body {
+    display: block;
+  }
+
+  /* ── TERM ROW ── */
+  .term-row {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr 1fr;
+    border-top: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .term-row:hover {
+    background: rgba(255,255,255,0.015);
+  }
+
+  .term-col {
+    padding: 24px 24px;
+    border-right: 1px solid var(--border);
+  }
+
+  .term-col:last-child {
+    border-right: none;
+  }
+
+  /* Term info column */
+  .term-name {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .term-en {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-bottom: 12px;
+  }
+
+  .diff-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+
+  .diff-tag.diff { background: rgba(248,113,113,0.15); color: var(--diff); border: 1px solid rgba(248,113,113,0.25); }
+  .diff-tag.same { background: rgba(74,222,128,0.1); color: var(--same); border: 1px solid rgba(74,222,128,0.2); }
+  .diff-tag.partial { background: rgba(251,146,60,0.1); color: var(--warn); border: 1px solid rgba(251,146,60,0.2); }
+
+  /* Exchange columns */
+  .exchange-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .gate-col .exchange-label { color: var(--gate); }
+  .binance-col .exchange-label { color: var(--binance); }
+  .okx-col .exchange-label { color: var(--okx); }
+
+  .def-text {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+
+  .formula {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11.5px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 10px;
+    margin-top: 8px;
+    color: var(--accent2);
+    line-height: 1.6;
+  }
+
+  /* highlight differences */
+  .highlight {
+    background: rgba(248,113,113,0.08);
+    border-left: 2px solid var(--diff);
+    padding-left: 10px;
+    margin-top: 8px;
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+    color: var(--diff);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── COLUMN HEADERS ── */
+  .col-headers {
+    display: grid;
+    grid-template-columns: 220px 1fr 1fr 1fr;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .col-h {
+    padding: 12px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-right: 1px solid var(--border);
+    color: var(--text-faint);
+  }
+
+  .col-h:last-child { border-right: none; }
+  .col-h.gate-h { color: var(--gate); }
+  .col-h.binance-h { color: var(--binance); }
+  .col-h.okx-h { color: var(--okx); }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 24px 60px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: var(--text-faint);
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .module.open .module-body {
+    animation: fadeIn 0.2s ease;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    header, .stats-bar, .filter-bar, main, footer {
+      padding-left: 24px;
+      padding-right: 24px;
+    }
+
+    .term-row, .col-headers {
+      grid-template-columns: 1fr;
+    }
+
+    .term-col {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .col-h { display: none; }
+  }
+
+  /* hidden class */
+  .module.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-label">合约产品研究 · Derivatives Product Research</div>
+  <h1>核心术语对比<span>·</span>三所比较</h1>
+  <div class="header-meta">
+    <div class="badge gate">● Gate.io</div>
+    <div class="badge binance">● Binance</div>
+    <div class="badge okx">● OKX</div>
+    <div class="legend">
+      <div class="legend-item"><div class="dot diff"></div>存在差异</div>
+      <div class="legend-item"><div class="dot partial"></div>部分差异</div>
+      <div class="legend-item"><div class="dot same"></div>三家一致</div>
+    </div>
+  </div>
+</header>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-num">6</div>
+    <div class="stat-label">核心模块<br>Core Modules</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">20</div>
+    <div class="stat-label">对比术语<br>Terms Compared</div>
+  </div>
+  <div class="stat" style="color:var(--diff)">
+    <div class="stat-num" style="color:var(--diff)">11</div>
+    <div class="stat-label">存在差异<br>With Divergence</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num" style="color:var(--same)">9</div>
+    <div class="stat-label">三家一致<br>Consistent</div>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-label">筛选 FILTER</span>
+  <button class="filter-btn active" onclick="filterModules('all', this)">全部</button>
+  <button class="filter-btn" onclick="filterModules('diff', this)">仅差异项</button>
+  <button class="filter-btn" onclick="filterModules('same', this)">仅一致项</button>
+  <button class="expand-all" onclick="toggleAll()">展开全部 ↕</button>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- MODULE 1 -->
+  <div class="module" data-module="1" onclick="toggleModule(this)">
+    <div class="module-header">
+      <div class="module-num">01</div>
+      <div class="module-title">定价机制 <span class="module-subtitle">Pricing Mechanism</span></div>
+      <div class="module-pills">
+        <span class="pill diff">标记价格 ⚠ 差异</span>
+        <span class="pill diff">指数价格 ⚠ 差异</span>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="module-body">
+      <div class="col-headers">
+        <div class="col-h">术语</div>
+        <div class="col-h gate-h">● Gate.io</div>
+        <div class="col-h binance-h">● Binance</div>
+        <div class="col-h okx-h">● OKX</div>
+      </div>
+
+      <!-- 标记价格 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">标记价格</div>
+          <div class="term-en">Mark Price</div>
+          <div class="diff-tag diff">⚠ 存在差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            中位数（价格1, 价格2, 最新成交价）
+            <div class="formula">价格1 = 指数价格 × (1 + 资金费用基差率)<br>价格2 = 指数价格 + 移动平均基差（5分钟/每秒采样）</div>
+            <div class="highlight">⚑ 防操纵：偏离均值过大时暂停更新</div>
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">
+            中位数（价格1, 价格2, 合约价格）
+            <div class="formula">价格1 = 指数价格 × (1 + 资金费率×剩余时间/周期)<br>价格2 = 指数价格 + 30秒移动平均基差（每秒采样）</div>
+          </div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">
+            指数价格 + 基差移动平均值
+            <div class="formula">基差 = (合约卖一价 + 买一价) / 2 − 指数价格</div>
+            <div class="highlight">⚑ 无三值取中逻辑，结构更简洁</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 指数价格 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">指数价格</div>
+          <div class="term-en">Index Price</div>
+          <div class="diff-tag diff">⚠ 存在差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">来源于多个交易所的加权平均现货价格</div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">
+            基于 16+ 交易所的加权平均
+            <div class="highlight">⚑ 单一来源偏差超 3% 时自动限幅</div>
+          </div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">来源多个现货交易所，加权计算</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 2 -->
+  <div class="module" data-module="2" onclick="toggleModule(this)">
+    <div class="module-header">
+      <div class="module-num">02</div>
+      <div class="module-title">盈亏计算 <span class="module-subtitle">PnL Calculation</span></div>
+      <div class="module-pills">
+        <span class="pill diff">已实现盈亏 ⚠</span>
+        <span class="pill same">未实现盈亏 ✓</span>
+        <span class="pill diff">仓位权益 ⚠</span>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="module-body">
+      <div class="col-headers">
+        <div class="col-h">术语</div>
+        <div class="col-h gate-h">● Gate.io</div>
+        <div class="col-h binance-h">● Binance</div>
+        <div class="col-h okx-h">● OKX</div>
+      </div>
+
+      <!-- 仓位名义价值 -->
+      <div class="term-row" data-type="same">
+        <div class="term-col">
+          <div class="term-name">仓位名义价值</div>
+          <div class="term-en">Position Notional Value</div>
+          <div class="diff-tag same">✓ 基本一致</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            USDT永续合约
+            <div class="formula">合约张数 × 合约乘数 × 标记价格</div>
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">
+            <div class="formula">价格 × 数量</div>
+            用于计算维持保证金分级
+          </div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">
+            <div class="formula">面值 × 张数 × 合约乘数 × 标记价格</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 仓位权益 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">仓位权益</div>
+          <div class="term-en">Position Equity</div>
+          <div class="diff-tag diff">⚠ 存在差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">未在单独术语中定义，体现在维持保证金率计算中</div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">含义等同于账户余额 + 未实现盈亏</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">
+            调整后权益（独立概念）
+            <div class="formula">账户总权益（考虑未实现盈亏后）</div>
+            <div class="highlight">⚑ 用于触发强平判断，定义最清晰</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 已实现盈亏 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">已实现盈亏</div>
+          <div class="term-en">Realized PnL</div>
+          <div class="diff-tag diff">⚠ 存在差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            当前仓位已产生的手续费、资金费用及减仓盈亏
+            <div class="formula">平仓盈亏 + 已付手续费 + 已付资金费</div>
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">取决于实际成交市场价格（无单独公式定义）</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">亏损仓位与减仓仓位抵消后实现的盈亏</div>
+        </div>
+      </div>
+
+      <!-- 未实现盈亏 -->
+      <div class="term-row" data-type="same">
+        <div class="term-col">
+          <div class="term-name">未实现盈亏</div>
+          <div class="term-en">Unrealized PnL</div>
+          <div class="diff-tag same">✓ 三家一致</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            <div class="formula">多仓 = 张数 × 乘数 × (标记价格 − 开仓价格)<br>空仓 = 张数 × 乘数 × (开仓价格 − 标记价格)</div>
+            不含手续费和资金费
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">基于标记价格计算，公式同 Gate 逻辑</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">
+            <div class="formula">USDT合约多仓 = 面值 × 张数 × 乘数 × (标记价格 − 开仓均价)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 3 -->
+  <div class="module" data-module="3" onclick="toggleModule(this)">
+    <div class="module-header">
+      <div class="module-num">03</div>
+      <div class="module-title">保证金体系 <span class="module-subtitle">Margin System</span></div>
+      <div class="module-pills">
+        <span class="pill diff">维持保证金率 ⚠</span>
+        <span class="pill diff">杠杆倍数 ⚠</span>
+        <span class="pill same">开仓保证金 ✓</span>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="module-body">
+      <div class="col-headers">
+        <div class="col-h">术语</div>
+        <div class="col-h gate-h">● Gate.io</div>
+        <div class="col-h binance-h">● Binance</div>
+        <div class="col-h okx-h">● OKX</div>
+      </div>
+
+      <!-- 开仓保证金 -->
+      <div class="term-row" data-type="same">
+        <div class="term-col">
+          <div class="term-name">开仓保证金</div>
+          <div class="term-en">Initial Margin</div>
+          <div class="diff-tag same">✓ 三家一致</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">杠杆交易开仓所需抵押的保证金金额</div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">
+            由所选杠杆倍数决定
+            <div class="formula">初始保证金 = 名义价值 / 杠杆</div>
+          </div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">
+            <div class="formula">初始保证金 = 名义价值 × 初始保证金率 (= 1/杠杆)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 维持保证金率 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">维持保证金率</div>
+          <div class="term-en">Maintenance Margin Rate</div>
+          <div class="diff-tag diff">⚠ 存在差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            <div class="formula">维持保证金率 = 仓位保证金余额 / 仓位所需维持保证金</div>
+            阶梯制：仓位越大，维持保证金率越高
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">
+            <div class="formula">维持保证金 = 名义价值 × 维持保证金率 − 速算数</div>
+            阶梯制，含速算数简化计算
+          </div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">
+            由仓位档位决定
+            <div class="highlight">⚑ 组合保证金模式下采用压力测试值</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 保证金 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">保证金（泛指）</div>
+          <div class="term-en">Margin</div>
+          <div class="diff-tag diff">⚠ 分类差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            <div class="formula">保证金 = 起始保证金 + 平仓手续费</div>
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">区分初始保证金（开仓）和维持保证金（持仓最低要求）</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">按账户模式分：逐仓保证金 / 全仓保证金 / 组合保证金</div>
+        </div>
+      </div>
+
+      <!-- 杠杆倍数 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">杠杆倍数</div>
+          <div class="term-en">Leverage</div>
+          <div class="diff-tag diff">⚠ 存在差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">可调整，调高后起始保证金降低但风险增加；更改杠杆不影响已实现盈亏</div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">
+            阶梯制：仓位名义价值越大，最大杠杆越低
+            <div class="highlight">⚑ 新账户前 30 天最高 20 倍限制</div>
+          </div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">仓位档位越高，允许杠杆越低（档位递减逻辑）</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 4 -->
+  <div class="module" data-module="4" onclick="toggleModule(this)">
+    <div class="module-header">
+      <div class="module-num">04</div>
+      <div class="module-title">资金费率 <span class="module-subtitle">Funding Rate</span></div>
+      <div class="module-pills">
+        <span class="pill same">费率公式 ✓</span>
+        <span class="pill diff">结算周期 ⚠</span>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="module-body">
+      <div class="col-headers">
+        <div class="col-h">术语</div>
+        <div class="col-h gate-h">● Gate.io</div>
+        <div class="col-h binance-h">● Binance</div>
+        <div class="col-h okx-h">● OKX</div>
+      </div>
+
+      <!-- 资金费率 -->
+      <div class="term-row" data-type="same">
+        <div class="term-col">
+          <div class="term-name">资金费率</div>
+          <div class="term-en">Funding Rate</div>
+          <div class="diff-tag same">✓ 三家一致</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            <div class="formula">= 溢价指数平均值 + clamp(间隔利息 − 溢价指数, ±0.05%)</div>
+            预设日利率 0.03%，多空互付，平台不收取
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">同 Gate，使用深度加权价格计算溢价指数</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">同机制，多空双方互付，平台不收取</div>
+        </div>
+      </div>
+
+      <!-- 结算周期 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">资金费结算周期</div>
+          <div class="term-en">Settlement Period</div>
+          <div class="diff-tag diff">⚠ 存在差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            默认 8H（UTC 0:00 / 8:00 / 16:00）
+            <div class="highlight">⚑ 费率触及上下限时自动缩短为 1H</div>
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">通常 8H，部分合约 1H（固定，无动态调整）</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">通常 8H（无动态调整机制描述）</div>
+        </div>
+      </div>
+
+      <!-- 资金费 -->
+      <div class="term-row" data-type="same">
+        <div class="term-col">
+          <div class="term-name">资金费</div>
+          <div class="term-en">Funding Fee</div>
+          <div class="diff-tag same">✓ 三家一致</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            <div class="formula">资金费 = 仓位价值 × 资金费率</div>
+            逐仓从该仓位保证金扣除；全仓从账户权益扣除
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">同 Gate 逻辑，按标记价格计算仓位价值</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">同 Gate 逻辑，按标记价格计算仓位价值</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 5 -->
+  <div class="module" data-module="5" onclick="toggleModule(this)">
+    <div class="module-header">
+      <div class="module-num">05</div>
+      <div class="module-title">仓位操作 <span class="module-subtitle">Position Operations</span></div>
+      <div class="module-pills">
+        <span class="pill same">开仓/平仓 ✓</span>
+        <span class="pill diff">仓位模式 ⚠</span>
+        <span class="pill diff">开仓均价 ⚠</span>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="module-body">
+      <div class="col-headers">
+        <div class="col-h">术语</div>
+        <div class="col-h gate-h">● Gate.io</div>
+        <div class="col-h binance-h">● Binance</div>
+        <div class="col-h okx-h">● OKX</div>
+      </div>
+
+      <!-- 开仓 -->
+      <div class="term-row" data-type="same">
+        <div class="term-col">
+          <div class="term-name">开仓</div>
+          <div class="term-en">Open Position</div>
+          <div class="diff-tag same">✓ 三家一致</div>
+        </div>
+        <div class="term-col gate-col"><div class="exchange-label">Gate.io</div><div class="def-text">下单买入（做多）或卖出（做空），建立仓位</div></div>
+        <div class="term-col binance-col"><div class="exchange-label">Binance</div><div class="def-text">同，需满足初始保证金要求</div></div>
+        <div class="term-col okx-col"><div class="exchange-label">OKX</div><div class="def-text">同</div></div>
+      </div>
+
+      <!-- 平仓 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">平仓 / 平仓盈亏</div>
+          <div class="term-en">Close Position</div>
+          <div class="diff-tag partial">△ 细节差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            对持有仓位进行反向操作，结束持仓
+            <div class="formula">平仓盈亏 = 含所有费用后的净盈亏（含手续费+资金费）</div>
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">同（无单独盈亏公式定义）</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">同（无单独盈亏公式定义）</div>
+        </div>
+      </div>
+
+      <!-- 开仓均价 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">开仓均价</div>
+          <div class="term-en">Average Entry Price</div>
+          <div class="diff-tag diff">⚠ 命名差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            开仓价格（单笔成交价）<br>+ 开仓均价（多笔加权平均）两个概念并存
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">头寸价格（EP）= 开仓均价（统一为单一概念）</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">开仓均价，用于计算未实现盈亏和 ADL 排名</div>
+        </div>
+      </div>
+
+      <!-- 仓位模式 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">仓位模式</div>
+          <div class="term-en">Position Mode</div>
+          <div class="diff-tag diff">⚠ 存在差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            全仓：账户全部余额作为共同保证金，维持保证金率共用<br>
+            逐仓：每仓独立保证金，亏损最多损失该仓保证金
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">
+            全仓 WalletBalance / 逐仓 IsolatedWalletBalance
+            <div class="highlight">⚑ 逐仓时 TMM=0, UPNL=0</div>
+          </div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">
+            逐仓 / 全仓 / 组合保证金（三种模式）
+            <div class="highlight">⚑ 组合保证金采用压力测试，为三家最复杂</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODULE 6 -->
+  <div class="module" data-module="6" onclick="toggleModule(this)">
+    <div class="module-header">
+      <div class="module-num">06</div>
+      <div class="module-title">风控机制 <span class="module-subtitle">Risk Control</span></div>
+      <div class="module-pills">
+        <span class="pill diff">强平价格 ⚠</span>
+        <span class="pill same">爆仓触发 ✓</span>
+        <span class="pill diff">ADL机制 ⚠</span>
+      </div>
+      <div class="chevron">▼</div>
+    </div>
+    <div class="module-body">
+      <div class="col-headers">
+        <div class="col-h">术语</div>
+        <div class="col-h gate-h">● Gate.io</div>
+        <div class="col-h binance-h">● Binance</div>
+        <div class="col-h okx-h">● OKX</div>
+      </div>
+
+      <!-- 强平价格 -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">强平价格</div>
+          <div class="term-en">Liquidation Price</div>
+          <div class="diff-tag diff">⚠ 公式差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            逐仓多头公式
+            <div class="formula">(开仓均价 − 初始保证金/合约乘数/张数)<br>÷ (1 − 强平费率)</div>
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">
+            全仓含复杂矩阵公式（WB, TMM, UPNL 参数）
+            <div class="highlight">⚑ 需区分单向持仓/双向持仓模式，为三家最复杂</div>
+          </div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">
+            触发条件定义
+            <div class="formula">账户权益 ≤ 维持保证金时触发</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 爆仓 -->
+      <div class="term-row" data-type="same">
+        <div class="term-col">
+          <div class="term-name">强制平仓（爆仓）</div>
+          <div class="term-en">Liquidation</div>
+          <div class="diff-tag same">✓ 三家一致</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            保证金率 ≤ 100% 时触发，系统接管仓位，按破产价格分批减仓
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">同，触发后自动强平</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">维持保证金率达到或低于 100% 时触发</div>
+        </div>
+      </div>
+
+      <!-- 阶梯减仓 -->
+      <div class="term-row" data-type="same">
+        <div class="term-col">
+          <div class="term-name">阶梯减仓</div>
+          <div class="term-en">Tiered Liquidation</div>
+          <div class="diff-tag same">✓ 基本一致</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            强平触发后按破产价分批次平仓（非一次性清算）
+            <div class="highlight">⚑ 减仓过程中保证金率若恢复 &gt;100% 则停止</div>
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">类似逻辑，分批执行</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">分档位逐步强平</div>
+        </div>
+      </div>
+
+      <!-- ADL -->
+      <div class="term-row" data-type="diff">
+        <div class="term-col">
+          <div class="term-name">自动减仓</div>
+          <div class="term-en">ADL · Auto-Deleveraging</div>
+          <div class="diff-tag diff">⚠ 触发条件差异</div>
+        </div>
+        <div class="term-col gate-col">
+          <div class="exchange-label">Gate.io</div>
+          <div class="def-text">
+            保险基金耗尽时启动
+            <div class="formula">排名 = 收益率 / 维持保证金率（从高到低强制撮合）</div>
+          </div>
+        </div>
+        <div class="term-col binance-col">
+          <div class="exchange-label">Binance</div>
+          <div class="def-text">同机制，文档未独立详述触发条件</div>
+        </div>
+        <div class="term-col okx-col">
+          <div class="exchange-label">OKX</div>
+          <div class="def-text">
+            <div class="formula">排名 = 杠杆收益率 = 收益率 / 账户保证金率</div>
+            <div class="highlight">⚑ 风险保证金低于阈值时触发（非单纯"基金耗尽"）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <span>Futures Contract Terminology Comparison</span>
+  <span style="color:var(--border)">|</span>
+  <span>Gate.io · Binance · OKX</span>
+  <span style="color:var(--border)">|</span>
+  <span>仅差异项用 ⚑ 标注</span>
+</footer>
+
+<script>
+  function toggleModule(el) {
+    el.classList.toggle('open');
+  }
+
+  let allOpen = false;
+  function toggleAll() {
+    allOpen = !allOpen;
+    document.querySelectorAll('.module:not(.hidden)').forEach(m => {
+      m.classList.toggle('open', allOpen);
+    });
+    document.querySelector('.expand-all').textContent = allOpen ? '收起全部 ↕' : '展开全部 ↕';
+  }
+
+  function filterModules(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    document.querySelectorAll('.module').forEach(m => {
+      m.classList.remove('hidden');
+    });
+
+    if (type === 'diff') {
+      document.querySelectorAll('.term-row').forEach(row => {
+        const isDiff = row.dataset.type === 'diff';
+        row.style.display = isDiff ? '' : 'none';
+      });
+    } else if (type === 'same') {
+      document.querySelectorAll('.term-row').forEach(row => {
+        const isSame = row.dataset.type === 'same';
+        row.style.display = isSame ? '' : 'none';
+      });
+    } else {
+      document.querySelectorAll('.term-row').forEach(row => {
+        row.style.display = '';
+      });
+    }
+  }
+</script>
+
+</body>
+</html>
