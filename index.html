@@ -462,6 +462,132 @@
 
   /* hidden class */
   .module.hidden { display: none; }
+
+  /* ── SUMMARY TABLE ── */
+  .summary-section {
+    padding: 32px 60px 0;
+  }
+
+  .summary-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 40px;
+    table-layout: fixed;
+  }
+
+  .summary-table th {
+    background: var(--surface);
+    padding: 14px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    font-weight: 500;
+  }
+
+  .summary-table th:first-child {
+    width: 110px;
+    text-align: left;
+    color: var(--text-dim);
+  }
+
+  .summary-table th.mod-h {
+    color: var(--accent2);
+  }
+
+  .summary-table td {
+    padding: 14px 16px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .summary-table td:last-child,
+  .summary-table th:last-child {
+    border-right: none;
+  }
+
+  .summary-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .summary-table td:first-child {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 1px;
+    font-weight: 500;
+    text-align: left;
+    background: var(--surface);
+  }
+
+  .row-same td:first-child {
+    color: var(--same);
+    border-left: 3px solid var(--same);
+  }
+
+  .row-diff td:first-child {
+    color: var(--diff);
+    border-left: 3px solid var(--diff);
+  }
+
+  .row-same td {
+    background: rgba(74,222,128,0.03);
+    color: var(--text-dim);
+  }
+
+  .row-diff td {
+    background: rgba(248,113,113,0.03);
+    color: var(--text-dim);
+  }
+
+  .term-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11.5px;
+    margin: 2px 2px 2px 0;
+    white-space: nowrap;
+  }
+
+  .chip-same {
+    background: rgba(74,222,128,0.1);
+    color: #6ee7b7;
+    border: 1px solid rgba(74,222,128,0.2);
+  }
+
+  .chip-diff {
+    background: rgba(248,113,113,0.1);
+    color: #fca5a5;
+    border: 1px solid rgba(248,113,113,0.2);
+  }
+
+  .chip-partial {
+    background: rgba(251,146,60,0.1);
+    color: #fdba74;
+    border: 1px solid rgba(251,146,60,0.2);
+  }
+
+  @media (max-width: 900px) {
+    .summary-section { padding-left: 24px; padding-right: 24px; }
+    .summary-table { display: block; overflow-x: auto; }
+  }
 </style>
 </head>
 <body>
@@ -509,6 +635,76 @@
   <button class="filter-btn" onclick="filterModules('diff', this)">仅差异项</button>
   <button class="filter-btn" onclick="filterModules('same', this)">仅一致项</button>
   <button class="expand-all" onclick="toggleAll()">展开全部 ↕</button>
+</div>
+
+<!-- SUMMARY TABLE -->
+<div class="summary-section">
+  <div class="summary-title">总览 · Overview Matrix</div>
+  <table class="summary-table">
+    <thead>
+      <tr>
+        <th></th>
+        <th class="mod-h">01<br>定价机制</th>
+        <th class="mod-h">02<br>盈亏计算</th>
+        <th class="mod-h">03<br>保证金体系</th>
+        <th class="mod-h">04<br>资金费率</th>
+        <th class="mod-h">05<br>仓位操作</th>
+        <th class="mod-h">06<br>风控机制</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="row-same">
+        <td>✓ 一致项</td>
+        <td>—</td>
+        <td>
+          <span class="term-chip chip-same">仓位名义价值</span>
+          <span class="term-chip chip-same">未实现盈亏</span>
+        </td>
+        <td>
+          <span class="term-chip chip-same">开仓保证金</span>
+        </td>
+        <td>
+          <span class="term-chip chip-same">资金费率</span>
+          <span class="term-chip chip-same">资金费</span>
+        </td>
+        <td>
+          <span class="term-chip chip-same">开仓</span>
+        </td>
+        <td>
+          <span class="term-chip chip-same">强制平仓触发</span>
+          <span class="term-chip chip-same">阶梯减仓</span>
+        </td>
+      </tr>
+      <tr class="row-diff">
+        <td>⚠ 差异项</td>
+        <td>
+          <span class="term-chip chip-diff">标记价格</span>
+          <span class="term-chip chip-diff">指数价格</span>
+        </td>
+        <td>
+          <span class="term-chip chip-diff">仓位权益</span>
+          <span class="term-chip chip-diff">已实现盈亏</span>
+        </td>
+        <td>
+          <span class="term-chip chip-diff">维持保证金率</span>
+          <span class="term-chip chip-diff">保证金分类</span>
+          <span class="term-chip chip-diff">杠杆倍数</span>
+        </td>
+        <td>
+          <span class="term-chip chip-diff">结算周期</span>
+        </td>
+        <td>
+          <span class="term-chip chip-partial">平仓盈亏</span>
+          <span class="term-chip chip-diff">开仓均价命名</span>
+          <span class="term-chip chip-diff">仓位模式</span>
+        </td>
+        <td>
+          <span class="term-chip chip-diff">强平价格公式</span>
+          <span class="term-chip chip-diff">ADL触发条件</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <!-- MAIN -->
